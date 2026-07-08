@@ -27,14 +27,50 @@ describe('content/content.yaml — integrity', () => {
 });
 
 describe('content/content.yaml — golden scenarios', () => {
+  // A full, sensible answer set for a light-SKU scenario. Individual helpers
+  // override just the dimensions under test.
+  const packagedTask = {
+    job: 'automate_task',
+    builder: 'business',
+    grounding: 'm365',
+    integration: 'surface_only',
+    sensitivity: 'standard',
+    governance: 'self_serve',
+    extensibility: 'none',
+    reach: 'individual',
+    autonomy: 'assistive',
+    appetite: 'configure',
+  };
+  const platformBuild = {
+    job: 'platform',
+    builder: 'engineer',
+    grounding: 'custom_data',
+    integration: 'custom_api',
+    sensitivity: 'restricted',
+    governance: 'mlops',
+    extensibility: 'full',
+    reach: 'external',
+    autonomy: 'autonomous',
+    appetite: 'invest',
+  };
+  const bespokeWorkflow = {
+    job: 'workflow',
+    builder: 'maker',
+    grounding: 'saas_connectors',
+    integration: 'connectors',
+    sensitivity: 'standard',
+    governance: 'central_alm',
+    extensibility: 'some',
+    reach: 'org',
+    autonomy: 'semi',
+    appetite: 'invest',
+  };
+
   it('GOLDEN: recommends a packaged skill over a custom build when the task fits', () => {
-    // The trust-defining case: a low-appetite team with a packaged-task
+    // The trust-defining case: a no-code business team with a packaged-task
     // scenario should be steered to Cowork, NOT Foundry. The tool must be
     // willing to recommend away from the heavier SKU.
-    const r = score(
-      { scenario: 'packaged_task', data_residency: 'none', build_appetite: 'low', control: 'managed' },
-      content,
-    );
+    const r = score(packagedTask, content);
     expect(r.top?.approachId).toBe('cowork_skills');
     // Foundry (the heavy custom build) must not win: either it ranks below
     // Cowork, or it is disqualified outright. Both prove the tool steers away
@@ -47,30 +83,26 @@ describe('content/content.yaml — golden scenarios', () => {
   });
 
   it('GOLDEN: regional data residency disqualifies Cowork and Scout', () => {
-    const r = score(
-      { scenario: 'packaged_task', data_residency: 'regional', build_appetite: 'low', control: 'managed' },
-      content,
-    );
+    const r = score({ ...packagedTask, sensitivity: 'regulated' }, content);
     const blocked = r.disqualified.map((s) => s.approachId);
     expect(blocked).toContain('cowork_skills');
     expect(blocked).toContain('scout_skills');
     expect(r.ranked.map((s) => s.approachId)).not.toContain('cowork_skills');
   });
 
-  it('GOLDEN: Foundry is disqualified without pro-code control (over-built)', () => {
-    const r = score(
-      { scenario: 'custom_workflow', data_residency: 'none', build_appetite: 'high', control: 'managed' },
-      content,
-    );
+  it('GOLDEN: Foundry is disqualified without an engineering owner (over-built)', () => {
+    const r = score({ ...bespokeWorkflow, builder: 'maker' }, content);
     expect(r.disqualified.map((s) => s.approachId)).toContain('foundry');
   });
 
   it('GOLDEN: a broad pro-code platform scenario recommends Foundry', () => {
-    const r = score(
-      { scenario: 'broad_platform', data_residency: 'none', build_appetite: 'high', control: 'procode' },
-      content,
-    );
+    const r = score(platformBuild, content);
     expect(r.top?.approachId).toBe('foundry');
+  });
+
+  it('GOLDEN: a bespoke governed workflow recommends Copilot Studio', () => {
+    const r = score(bespokeWorkflow, content);
+    expect(r.top?.approachId).toBe('copilot_studio');
   });
 
   it('GOLDEN: fully unanswered -> no clear fit, confidence none', () => {
@@ -80,7 +112,8 @@ describe('content/content.yaml — golden scenarios', () => {
   });
 
   it('GOLDEN: deterministic across runs on real content', () => {
-    const ans = { scenario: 'custom_workflow', data_residency: 'none', build_appetite: 'high', control: 'procode' };
-    expect(JSON.stringify(score(ans, content))).toBe(JSON.stringify(score(ans, content)));
+    expect(JSON.stringify(score(platformBuild, content))).toBe(
+      JSON.stringify(score(platformBuild, content)),
+    );
   });
 });

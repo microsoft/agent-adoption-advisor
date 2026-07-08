@@ -19,24 +19,48 @@ const content = parse(
 
 const scenarios: { name: string; answers: AnswerMap }[] = [
   {
-    name: 'Well-scoped packaged task, low build appetite (should steer to a light SKU)',
-    answers: { scenario: 'packaged_task', data_residency: 'none', build_appetite: 'low', control: 'managed' },
+    name: 'Well-scoped packaged task, no-code business team (should steer to a light SKU)',
+    answers: {
+      job: 'automate_task', builder: 'business', grounding: 'm365', integration: 'surface_only',
+      sensitivity: 'standard', governance: 'self_serve', extensibility: 'none', reach: 'individual',
+      autonomy: 'assistive', appetite: 'configure',
+    },
   },
   {
-    name: 'Same task BUT regional data residency (should disqualify Cowork/Scout)',
-    answers: { scenario: 'packaged_task', data_residency: 'regional', build_appetite: 'low', control: 'managed' },
+    name: 'Same task BUT regulated data residency (should disqualify the M365-surface SKUs)',
+    answers: {
+      job: 'automate_task', builder: 'business', grounding: 'm365', integration: 'surface_only',
+      sensitivity: 'regulated', governance: 'self_serve', extensibility: 'none', reach: 'individual',
+      autonomy: 'assistive', appetite: 'configure',
+    },
   },
   {
-    name: 'Bespoke org workflow, engineers ready, managed control',
-    answers: { scenario: 'custom_workflow', data_residency: 'none', build_appetite: 'high', control: 'managed' },
+    name: 'Research and retrieval, business user, M365 content (should favor Scout)',
+    answers: {
+      job: 'research', builder: 'business', grounding: 'm365', integration: 'surface_only',
+      sensitivity: 'standard', governance: 'self_serve', extensibility: 'none', reach: 'individual',
+      autonomy: 'assistive', appetite: 'configure',
+    },
   },
   {
-    name: 'Broad platform, pro-code control (should recommend Foundry)',
-    answers: { scenario: 'broad_platform', data_residency: 'none', build_appetite: 'high', control: 'procode' },
+    name: 'Bespoke governed workflow, maker, SaaS connectors (should favor Copilot Studio)',
+    answers: {
+      job: 'workflow', builder: 'maker', grounding: 'saas_connectors', integration: 'connectors',
+      sensitivity: 'standard', governance: 'central_alm', extensibility: 'some', reach: 'org',
+      autonomy: 'semi', appetite: 'invest',
+    },
   },
   {
-    name: 'Only one question answered (should be low/none confidence, provisional)',
-    answers: { scenario: 'custom_workflow' },
+    name: 'Broad platform, engineers, custom data + API, autonomous (should recommend Foundry)',
+    answers: {
+      job: 'platform', builder: 'engineer', grounding: 'custom_data', integration: 'custom_api',
+      sensitivity: 'restricted', governance: 'mlops', extensibility: 'full', reach: 'external',
+      autonomy: 'autonomous', appetite: 'invest',
+    },
+  },
+  {
+    name: 'Only the job answered (should be low/none confidence, provisional)',
+    answers: { job: 'workflow' },
   },
   {
     name: 'Nothing answered (no clear fit)',
