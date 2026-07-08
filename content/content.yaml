@@ -125,7 +125,7 @@ approaches:
       - "Native to the Microsoft 365 surface users already have."
     cons:
       - "Limited for bespoke, deeply custom workflows."
-    whenNotToUse: "When the scenario needs pro-code control or a broad platform."
+    whenNotToUse: "When the scenario needs bespoke workflows, deep integration, or central governance."
 
   - id: "cowork_skills"
     name: "Cowork"
@@ -149,23 +149,13 @@ approaches:
 
   - id: "copilot_studio"
     name: "Copilot Studio"
-    summary: "Low-code authoring for bespoke, governed org workflows."
+    summary: "Low-code authoring for bespoke, governed, pro-code-extensible org workflows."
     pros:
       - "Handles bespoke workflows without full pro-code."
-      - "Governed, extensible authoring with connectors and ALM."
+      - "Governed, extensible authoring with connectors, ALM, and pro-dev extensions."
     cons:
       - "More setup than a packaged skill."
     whenNotToUse: "When a packaged skill already covers the task."
-
-  - id: "foundry"
-    name: "Foundry"
-    summary: "Pro-code platform for broad, engineer-owned agent builds."
-    pros:
-      - "Full pro-code control over models and orchestration."
-      - "Best for broad platforms other teams build on."
-    cons:
-      - "Highest build and maintenance cost."
-    whenNotToUse: "When a lighter, packaged option covers the scenario."
 
 rules:
   confidence:
@@ -190,17 +180,15 @@ rules:
     - { question: "sensitivity", option: "restricted", approach: "scout_skills", reason: "Scout skills cannot meet a highly restricted compliance boundary." }
     - { question: "sensitivity", option: "restricted", approach: "agent_builder", reason: "Agent Builder cannot meet a highly restricted compliance boundary." }
 
-  # Foundry is a pro-code platform; it needs an engineering team to own it in
-  # production. Without engineers as the builder, it is over-built. Unanswered
-  # -> recorded as an assumption, not a disqualification.
-  requiredPrereqs:
-    - { approach: "foundry", question: "builder", option: "engineer", reason: "Foundry is pro-code; it needs an engineering team to own it in production." }
+  # No approach currently requires a hard prerequisite. (Foundry's engineer
+  # prereq was removed when Foundry was dropped from the portfolio.)
+  requiredPrereqs: []
 
   strongFits:
     - { question: "job", option: "automate_task", approach: "cowork_skills", reason: "A packaged skill likely covers this task directly." }
     - { question: "job", option: "research", approach: "scout_skills", reason: "Scout is purpose-built for research and retrieval." }
     - { question: "job", option: "workflow", approach: "copilot_studio", reason: "Copilot Studio is built for bespoke conversational workflows." }
-    - { question: "job", option: "platform", approach: "foundry", reason: "Broad platform builds are Foundry's core use case." }
+    - { question: "job", option: "platform", approach: "copilot_studio", reason: "Copilot Studio is the most extensible, pro-code-capable option for platform-style builds." }
 
   weights:
     # Q1 job
@@ -212,12 +200,9 @@ rules:
     - { question: "job", option: "research", approach: "cowork_skills", points: 2 }
     - { question: "job", option: "research", approach: "agent_builder", points: 2 }
     - { question: "job", option: "research", approach: "copilot_studio", points: 1 }
-    - { question: "job", option: "research", approach: "foundry", points: 1 }
     - { question: "job", option: "workflow", approach: "copilot_studio", points: 5 }
-    - { question: "job", option: "workflow", approach: "foundry", points: 3 }
     - { question: "job", option: "workflow", approach: "agent_builder", points: 1 }
-    - { question: "job", option: "platform", approach: "foundry", points: 5 }
-    - { question: "job", option: "platform", approach: "copilot_studio", points: 2 }
+    - { question: "job", option: "platform", approach: "copilot_studio", points: 5 }
 
     # Q2 builder
     - { question: "builder", option: "business", approach: "agent_builder", points: 4 }
@@ -227,9 +212,7 @@ rules:
     - { question: "builder", option: "maker", approach: "copilot_studio", points: 5 }
     - { question: "builder", option: "maker", approach: "agent_builder", points: 2 }
     - { question: "builder", option: "maker", approach: "cowork_skills", points: 1 }
-    - { question: "builder", option: "maker", approach: "foundry", points: 1 }
-    - { question: "builder", option: "engineer", approach: "foundry", points: 5 }
-    - { question: "builder", option: "engineer", approach: "copilot_studio", points: 2 }
+    - { question: "builder", option: "engineer", approach: "copilot_studio", points: 5 }
 
     # Q3 grounding
     - { question: "grounding", option: "m365", approach: "agent_builder", points: 4 }
@@ -237,33 +220,25 @@ rules:
     - { question: "grounding", option: "m365", approach: "scout_skills", points: 3 }
     - { question: "grounding", option: "m365", approach: "copilot_studio", points: 1 }
     - { question: "grounding", option: "saas_connectors", approach: "copilot_studio", points: 5 }
-    - { question: "grounding", option: "saas_connectors", approach: "foundry", points: 2 }
-    - { question: "grounding", option: "custom_data", approach: "foundry", points: 5 }
-    - { question: "grounding", option: "custom_data", approach: "copilot_studio", points: 2 }
+    - { question: "grounding", option: "custom_data", approach: "copilot_studio", points: 5 }
 
     # Q4 integration
     - { question: "integration", option: "surface_only", approach: "agent_builder", points: 4 }
     - { question: "integration", option: "surface_only", approach: "cowork_skills", points: 4 }
     - { question: "integration", option: "surface_only", approach: "scout_skills", points: 3 }
     - { question: "integration", option: "connectors", approach: "copilot_studio", points: 5 }
-    - { question: "integration", option: "connectors", approach: "foundry", points: 2 }
-    - { question: "integration", option: "custom_api", approach: "foundry", points: 5 }
-    - { question: "integration", option: "custom_api", approach: "copilot_studio", points: 1 }
+    - { question: "integration", option: "custom_api", approach: "copilot_studio", points: 5 }
 
     # Q5 sensitivity (standard = neutral; regulated/restricted mostly gate via disqualifiers)
-    - { question: "sensitivity", option: "regulated", approach: "foundry", points: 3 }
-    - { question: "sensitivity", option: "regulated", approach: "copilot_studio", points: 2 }
-    - { question: "sensitivity", option: "restricted", approach: "foundry", points: 4 }
-    - { question: "sensitivity", option: "restricted", approach: "copilot_studio", points: 2 }
+    - { question: "sensitivity", option: "regulated", approach: "copilot_studio", points: 3 }
+    - { question: "sensitivity", option: "restricted", approach: "copilot_studio", points: 4 }
 
     # Q6 governance
     - { question: "governance", option: "self_serve", approach: "agent_builder", points: 3 }
     - { question: "governance", option: "self_serve", approach: "cowork_skills", points: 3 }
     - { question: "governance", option: "self_serve", approach: "scout_skills", points: 3 }
     - { question: "governance", option: "central_alm", approach: "copilot_studio", points: 5 }
-    - { question: "governance", option: "central_alm", approach: "foundry", points: 2 }
-    - { question: "governance", option: "mlops", approach: "foundry", points: 5 }
-    - { question: "governance", option: "mlops", approach: "copilot_studio", points: 1 }
+    - { question: "governance", option: "mlops", approach: "copilot_studio", points: 5 }
 
     # Q7 extensibility
     - { question: "extensibility", option: "none", approach: "cowork_skills", points: 4 }
@@ -271,19 +246,15 @@ rules:
     - { question: "extensibility", option: "none", approach: "scout_skills", points: 2 }
     - { question: "extensibility", option: "some", approach: "copilot_studio", points: 5 }
     - { question: "extensibility", option: "some", approach: "agent_builder", points: 1 }
-    - { question: "extensibility", option: "some", approach: "foundry", points: 1 }
-    - { question: "extensibility", option: "full", approach: "foundry", points: 5 }
-    - { question: "extensibility", option: "full", approach: "copilot_studio", points: 1 }
+    - { question: "extensibility", option: "full", approach: "copilot_studio", points: 5 }
 
     # Q8 reach
     - { question: "reach", option: "individual", approach: "agent_builder", points: 3 }
     - { question: "reach", option: "individual", approach: "cowork_skills", points: 3 }
     - { question: "reach", option: "individual", approach: "scout_skills", points: 3 }
     - { question: "reach", option: "org", approach: "copilot_studio", points: 4 }
-    - { question: "reach", option: "org", approach: "foundry", points: 2 }
     - { question: "reach", option: "org", approach: "agent_builder", points: 1 }
-    - { question: "reach", option: "external", approach: "foundry", points: 4 }
-    - { question: "reach", option: "external", approach: "copilot_studio", points: 3 }
+    - { question: "reach", option: "external", approach: "copilot_studio", points: 4 }
 
     # Q9 autonomy
     - { question: "autonomy", option: "assistive", approach: "agent_builder", points: 3 }
@@ -291,14 +262,11 @@ rules:
     - { question: "autonomy", option: "assistive", approach: "scout_skills", points: 2 }
     - { question: "autonomy", option: "assistive", approach: "copilot_studio", points: 1 }
     - { question: "autonomy", option: "semi", approach: "copilot_studio", points: 4 }
-    - { question: "autonomy", option: "semi", approach: "foundry", points: 2 }
-    - { question: "autonomy", option: "autonomous", approach: "foundry", points: 5 }
-    - { question: "autonomy", option: "autonomous", approach: "copilot_studio", points: 1 }
+    - { question: "autonomy", option: "autonomous", approach: "copilot_studio", points: 5 }
 
     # Q10 appetite (tie-breaker)
     - { question: "appetite", option: "configure", approach: "cowork_skills", points: 3 }
     - { question: "appetite", option: "configure", approach: "agent_builder", points: 2 }
     - { question: "appetite", option: "configure", approach: "scout_skills", points: 2 }
     - { question: "appetite", option: "configure", approach: "copilot_studio", points: 1 }
-    - { question: "appetite", option: "invest", approach: "foundry", points: 3 }
     - { question: "appetite", option: "invest", approach: "copilot_studio", points: 3 }

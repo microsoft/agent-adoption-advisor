@@ -59,9 +59,9 @@ describe('nextStep', () => {
   });
 
   it('is confident and forward-moving at high confidence', () => {
-    const top = approach('Foundry');
+    const top = approach('Copilot Studio');
     const s = nextStep(result({ top, confidence: 'high' }));
-    expect(s).toMatch(/Move forward with a scoped Foundry pilot/);
+    expect(s).toMatch(/Move forward with a scoped Copilot Studio pilot/);
   });
 
   it('appends a nudge to answer remaining questions', () => {

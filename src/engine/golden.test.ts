@@ -68,18 +68,18 @@ describe('content/content.yaml — golden scenarios', () => {
 
   it('GOLDEN: recommends a packaged skill over a custom build when the task fits', () => {
     // The trust-defining case: a no-code business team with a packaged-task
-    // scenario should be steered to Cowork, NOT Foundry. The tool must be
-    // willing to recommend away from the heavier SKU.
+    // scenario should be steered to Cowork, NOT the heavier Copilot Studio
+    // build. The tool must be willing to recommend away from the heavier SKU.
     const r = score(packagedTask, content);
     expect(r.top?.approachId).toBe('cowork_skills');
-    // Foundry (the heavy custom build) must not win: either it ranks below
-    // Cowork, or it is disqualified outright. Both prove the tool steers away
-    // from over-building.
+    // Copilot Studio (the heavier custom build) must not win: either it ranks
+    // below Cowork, or it is disqualified outright. Both prove the tool steers
+    // away from over-building.
     const rankedIds = r.ranked.map((s) => s.approachId);
-    const foundryRank = rankedIds.indexOf('foundry');
+    const studioRank = rankedIds.indexOf('copilot_studio');
     const coworkRank = rankedIds.indexOf('cowork_skills');
-    const foundryDisqualified = r.disqualified.some((s) => s.approachId === 'foundry');
-    expect(foundryDisqualified || foundryRank > coworkRank).toBe(true);
+    const studioDisqualified = r.disqualified.some((s) => s.approachId === 'copilot_studio');
+    expect(studioDisqualified || studioRank > coworkRank).toBe(true);
   });
 
   it('GOLDEN: regional data residency disqualifies Cowork and Scout', () => {
@@ -90,14 +90,21 @@ describe('content/content.yaml — golden scenarios', () => {
     expect(r.ranked.map((s) => s.approachId)).not.toContain('cowork_skills');
   });
 
-  it('GOLDEN: Foundry is disqualified without an engineering owner (over-built)', () => {
-    const r = score({ ...bespokeWorkflow, builder: 'maker' }, content);
-    expect(r.disqualified.map((s) => s.approachId)).toContain('foundry');
+  it('GOLDEN: a restricted compliance posture leaves Copilot Studio as the surviving fit', () => {
+    // Even a light-looking task, once the data posture is restricted, rules out
+    // the M365-surface SKUs — Copilot Studio is the only approach that can meet
+    // the boundary, so it must be the recommendation.
+    const r = score({ ...packagedTask, sensitivity: 'restricted' }, content);
+    const blocked = r.disqualified.map((s) => s.approachId);
+    expect(blocked).toContain('cowork_skills');
+    expect(blocked).toContain('scout_skills');
+    expect(blocked).toContain('agent_builder');
+    expect(r.top?.approachId).toBe('copilot_studio');
   });
 
-  it('GOLDEN: a broad pro-code platform scenario recommends Foundry', () => {
+  it('GOLDEN: a broad pro-code platform scenario recommends Copilot Studio', () => {
     const r = score(platformBuild, content);
-    expect(r.top?.approachId).toBe('foundry');
+    expect(r.top?.approachId).toBe('copilot_studio');
   });
 
   it('GOLDEN: a bespoke governed workflow recommends Copilot Studio', () => {

@@ -51,7 +51,7 @@ const scenarios: { name: string; answers: AnswerMap }[] = [
     },
   },
   {
-    name: 'Broad platform, engineers, custom data + API, autonomous (should recommend Foundry)',
+    name: 'Pro-code platform, engineers, custom data + API, autonomous (should recommend Copilot Studio)',
     answers: {
       job: 'platform', builder: 'engineer', grounding: 'custom_data', integration: 'custom_api',
       sensitivity: 'restricted', governance: 'mlops', extensibility: 'full', reach: 'external',
