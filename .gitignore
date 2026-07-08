@@ -431,3 +431,4 @@ FodyWeavers.xsd
 # Build artifacts
 dist/
 public/content.json
+.gstack/
