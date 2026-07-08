@@ -12,7 +12,7 @@
 #
 # Point scale convention: 0 (no signal) .. 5 (defining signal) per option.
 
-version: "2026.07"
+version: "2026.08"
 lastReviewed: "2026-07-08"
 
 questions:
@@ -119,33 +119,38 @@ questions:
 approaches:
   - id: "agent_builder"
     name: "Agent Builder"
-    summary: "Fastest path for well-scoped tasks inside Microsoft 365."
+    summary: "The 'ask' end of the spectrum: fast, interactive, in-the-flow Copilot help — ask, draft, and summarize, extended with a lightweight custom agent."
     pros:
       - "Lowest time-to-value; no code."
-      - "Native to the Microsoft 365 surface users already have."
+      - "Native to the Microsoft 365 surface users already have — help in the flow of work."
+      - "The user stays in the loop, steering each turn."
     cons:
-      - "Limited for bespoke, deeply custom workflows."
-    whenNotToUse: "When the scenario needs bespoke workflows, deep integration, or central governance."
+      - "Interactive by design — not for delegated, multi-step, or background work."
+      - "Limited for bespoke workflows, deep integration, or central governance."
+    whenNotToUse: "When the work should be delegated end-to-end for review (use Cowork), run proactively in the background (use Scout), or needs bespoke workflows, deep integration, or central governance (use Copilot Studio)."
 
   - id: "cowork_skills"
     name: "Cowork"
-    summary: "Packaged skills for common collaborative tasks with minimal build."
+    summary: "The 'delegate' end of the spectrum: describe an outcome and Cowork plans the work, executes the steps across apps, and returns a review-ready artifact."
     pros:
-      - "Covers common tasks out of the box."
-      - "Very low maintenance burden."
+      - "Delivers finished, reviewable work across apps — not just another chat thread."
+      - "Grounds in email, meetings, files, and business data, then uses skills and connectors to complete the steps."
+      - "Pauses for approval before sensitive actions like sending or making a big update."
     cons:
-      - "Not a fit when the workflow is genuinely org-specific."
-    whenNotToUse: "When no packaged skill covers the scenario."
+      - "Overkill for a quick answer or single-turn Q&A."
+      - "Not a fully hands-off, always-on background agent."
+    whenNotToUse: "When the user just needs a fast interactive answer or draft (use Agent Builder), or wants an always-on agent that keeps working in the background without being prompted (use Scout)."
 
   - id: "scout_skills"
     name: "Scout"
-    summary: "Skill-augmented approach for research and retrieval tasks."
+    summary: "The 'authorize' end of the spectrum: an always-on personal agent that works in the background under its own governed identity to coordinate and follow through proactively."
     pros:
-      - "Strong for retrieval-heavy, research-style tasks."
-      - "Low build overhead."
+      - "Proactive follow-through — keeps work moving without being prompted at each step."
+      - "Operates with its own governed Entra identity and customer-set permissions; sensitive actions can require sign-off."
     cons:
-      - "Narrower than a full custom platform."
-    whenNotToUse: "When you need a general-purpose custom agent."
+      - "Experimental: available through Frontier as a private preview, not general availability."
+      - "Built for ongoing coordination, not one-off answers or a single delegated deliverable."
+    whenNotToUse: "When you need a generally available capability today, a quick interactive answer (use Agent Builder), or a single delegated deliverable for review (use Cowork)."
 
   - id: "copilot_studio"
     name: "Copilot Studio"
@@ -185,10 +190,11 @@ rules:
   requiredPrereqs: []
 
   strongFits:
-    - { question: "job", option: "automate_task", approach: "cowork_skills", reason: "A packaged skill likely covers this task directly." }
-    - { question: "job", option: "research", approach: "scout_skills", reason: "Scout is purpose-built for research and retrieval." }
+    - { question: "job", option: "automate_task", approach: "cowork_skills", reason: "A common, well-scoped task is a natural thing to delegate to Cowork." }
+    - { question: "job", option: "research", approach: "agent_builder", reason: "Quick answers, retrieval, and synthesis are the conversational Copilot's home." }
     - { question: "job", option: "workflow", approach: "copilot_studio", reason: "Copilot Studio is built for bespoke conversational workflows." }
     - { question: "job", option: "platform", approach: "copilot_studio", reason: "Copilot Studio is the most extensible, pro-code-capable option for platform-style builds." }
+    - { question: "autonomy", option: "autonomous", approach: "scout_skills", reason: "Scout is the always-on, autonomous personal agent — the 'authorize' end of the spectrum." }
 
   weights:
     # Q1 job
@@ -196,9 +202,9 @@ rules:
     - { question: "job", option: "automate_task", approach: "agent_builder", points: 4 }
     - { question: "job", option: "automate_task", approach: "scout_skills", points: 2 }
     - { question: "job", option: "automate_task", approach: "copilot_studio", points: 2 }
-    - { question: "job", option: "research", approach: "scout_skills", points: 5 }
+    - { question: "job", option: "research", approach: "agent_builder", points: 5 }
     - { question: "job", option: "research", approach: "cowork_skills", points: 2 }
-    - { question: "job", option: "research", approach: "agent_builder", points: 2 }
+    - { question: "job", option: "research", approach: "scout_skills", points: 1 }
     - { question: "job", option: "research", approach: "copilot_studio", points: 1 }
     - { question: "job", option: "workflow", approach: "copilot_studio", points: 5 }
     - { question: "job", option: "workflow", approach: "agent_builder", points: 1 }
@@ -256,13 +262,18 @@ rules:
     - { question: "reach", option: "org", approach: "agent_builder", points: 1 }
     - { question: "reach", option: "external", approach: "copilot_studio", points: 4 }
 
-    # Q9 autonomy
-    - { question: "autonomy", option: "assistive", approach: "agent_builder", points: 3 }
-    - { question: "autonomy", option: "assistive", approach: "cowork_skills", points: 3 }
-    - { question: "autonomy", option: "assistive", approach: "scout_skills", points: 2 }
+    # Q9 autonomy — the deck's spectrum: ask (assistive) -> delegate (semi) ->
+    # authorize (autonomous). Agent Builder is the interactive entry, Cowork the
+    # delegate, Scout the always-on personal agent. Copilot Studio stays a
+    # credible path at the semi/autonomous end for teams that BUILD their own.
+    - { question: "autonomy", option: "assistive", approach: "agent_builder", points: 4 }
+    - { question: "autonomy", option: "assistive", approach: "cowork_skills", points: 2 }
+    - { question: "autonomy", option: "assistive", approach: "scout_skills", points: 1 }
     - { question: "autonomy", option: "assistive", approach: "copilot_studio", points: 1 }
-    - { question: "autonomy", option: "semi", approach: "copilot_studio", points: 4 }
-    - { question: "autonomy", option: "autonomous", approach: "copilot_studio", points: 5 }
+    - { question: "autonomy", option: "semi", approach: "cowork_skills", points: 4 }
+    - { question: "autonomy", option: "semi", approach: "copilot_studio", points: 3 }
+    - { question: "autonomy", option: "autonomous", approach: "scout_skills", points: 4 }
+    - { question: "autonomy", option: "autonomous", approach: "copilot_studio", points: 4 }
 
     # Q10 appetite (tie-breaker)
     - { question: "appetite", option: "configure", approach: "cowork_skills", points: 3 }

@@ -112,10 +112,20 @@ describe('content/content.yaml — golden scenarios', () => {
     expect(r.top?.approachId).toBe('copilot_studio');
   });
 
-  it('GOLDEN: a research job recommends Scout even against near-substitute SKUs', () => {
-    // The strong-fit boost must let the purpose-built tool win over Cowork/
-    // Agent Builder, which tie on the generic profile answers.
+  it('GOLDEN: a research/quick-answers job recommends the conversational entry (Agent Builder), not Scout', () => {
+    // Per the Copilot Work Spectrum, "ask/quick answers" is Copilot Chat's home
+    // (Agent Builder here) — NOT Scout. Scout is the always-on autonomy end.
     const r = score({ ...packagedTask, job: 'research' }, content);
+    expect(r.top?.approachId).toBe('agent_builder');
+    expect(r.top?.approachId).not.toBe('scout_skills');
+  });
+
+  it('GOLDEN: an always-on autonomous scenario recommends Scout', () => {
+    // Scout's defining signal is autonomy=autonomous ("authorize" end of the
+    // spectrum). With no competing job claim, an always-on no-code agent lands
+    // on Scout over the lighter interactive/delegate SKUs.
+    const { job: _job, ...noJob } = packagedTask;
+    const r = score({ ...noJob, autonomy: 'autonomous' }, content);
     expect(r.top?.approachId).toBe('scout_skills');
   });
 

@@ -35,11 +35,19 @@ const scenarios: { name: string; answers: AnswerMap }[] = [
     },
   },
   {
-    name: 'Research and retrieval, business user, M365 content (should favor Scout)',
+    name: 'Research / quick answers, business user, M365 content (should favor Agent Builder — the "ask" entry)',
     answers: {
       job: 'research', builder: 'business', grounding: 'm365', integration: 'surface_only',
       sensitivity: 'standard', governance: 'self_serve', extensibility: 'none', reach: 'individual',
       autonomy: 'assistive', appetite: 'configure',
+    },
+  },
+  {
+    name: 'Always-on personal agent, background follow-through, no-code (should favor Scout — the "authorize" end)',
+    answers: {
+      builder: 'business', grounding: 'm365', integration: 'surface_only',
+      sensitivity: 'standard', governance: 'self_serve', extensibility: 'none', reach: 'individual',
+      autonomy: 'autonomous', appetite: 'configure',
     },
   },
   {
