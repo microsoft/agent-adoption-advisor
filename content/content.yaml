@@ -173,6 +173,11 @@ rules:
     mediumMargin: 0.12
     minFit: 0.40
 
+  # Each matched strong-fit adds this many points. Set high enough that the
+  # purpose-built tool for a job wins even when the lighter SKUs tie on generic
+  # profile answers. This is the lever that makes "job to be done" dominate.
+  strongFitBonus: 10
+
   # Hard blocks. Regulated/restricted data posture rules out the lighter
   # M365-surface SKUs that cannot guarantee residency or a custom compliance
   # boundary. This is what stops soft answers from crowning an indefensible

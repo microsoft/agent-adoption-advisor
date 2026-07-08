@@ -32,6 +32,7 @@ function fixture(): Content {
     ],
     rules: {
       confidence: { highMargin: 0.3, mediumMargin: 0.12, minFit: 0.4 },
+      strongFitBonus: 10,
       disqualifiers: [],
       requiredPrereqs: [],
       strongFits: [],
@@ -109,15 +110,25 @@ describe('score — rule primitives', () => {
     expect(r.assumptions.some((a) => a.includes('needs a'))).toBe(true);
   });
 
-  it('strong fit is surfaced on the matching approach', () => {
+  it('strong fit is surfaced on the matching approach and boosts its score', () => {
     const c = fixture();
     c.rules.strongFits = [
       { question: 'q1', option: 'a', approach: 'alpha', reason: 'great match' },
+    ];
+    // Without the boost, beta would beat alpha on q1=b,q2=x? Use a case where
+    // the boost is what flips the ranking: give beta more raw weight on q1=a,
+    // but alpha the strong fit.
+    c.rules.weights = [
+      { question: 'q1', option: 'a', approach: 'beta', points: 5 },
+      { question: 'q1', option: 'a', approach: 'alpha', points: 1 },
     ];
     const r = score({ q1: 'a' }, c);
     const alpha = r.ranked.find((s) => s.approachId === 'alpha');
     expect(alpha?.strongFit).toBe(true);
     expect(alpha?.strongFitReasons).toContain('great match');
+    // 1 + 10 bonus = 11 beats beta's 5.
+    expect(r.top?.approachId).toBe('alpha');
+    expect(alpha?.fit).toBeLessThanOrEqual(1);
   });
 });
 

@@ -72,7 +72,9 @@ export function score(answers: AnswerMap, content: Content): ScoreResult {
 
   const assumptions: string[] = [];
 
-  // Precompute max attainable points per approach (best option per question).
+  // Precompute max attainable points per approach (best option per question),
+  // including the strong-fit bonus for any question where the approach can earn
+  // one. Including it in maxPossible keeps `fit` in [0,1].
   const maxByApproach = new Map<ApproachId, number>();
   for (const a of approaches) maxByApproach.set(a.id, 0);
   for (const q of questions) {
@@ -84,6 +86,17 @@ export function score(answers: AnswerMap, content: Content): ScoreResult {
     }
     for (const [approach, best] of bestPerApproach) {
       maxByApproach.set(approach, (maxByApproach.get(approach) ?? 0) + best);
+    }
+    // A question can contribute at most one strong-fit bonus per approach.
+    const strongFitApproaches = new Set<ApproachId>();
+    for (const s of rules.strongFits) {
+      if (s.question === q.id) strongFitApproaches.add(s.approach);
+    }
+    for (const approach of strongFitApproaches) {
+      maxByApproach.set(
+        approach,
+        (maxByApproach.get(approach) ?? 0) + rules.strongFitBonus,
+      );
     }
   }
 
@@ -118,10 +131,13 @@ export function score(answers: AnswerMap, content: Content): ScoreResult {
       if (answers[w.question] === w.option) points += w.points;
     }
 
-    // Strong-fit markers.
+    // Strong-fit markers, each worth a decisive point bonus.
     for (const s of rules.strongFits) {
       if (s.approach !== a.id) continue;
-      if (answers[s.question] === s.option) strongFitReasons.push(s.reason);
+      if (answers[s.question] === s.option) {
+        strongFitReasons.push(s.reason);
+        points += rules.strongFitBonus;
+      }
     }
 
     const maxPossible = maxByApproach.get(a.id) ?? 0;

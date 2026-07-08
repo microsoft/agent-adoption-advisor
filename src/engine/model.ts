@@ -92,6 +92,12 @@ export interface RulesModel {
   disqualifiers: DisqualifierRule[];
   requiredPrereqs: RequiredPrereqRule[];
   strongFits: StrongFitRule[];
+  /**
+   * Points added to an approach for each strong-fit rule that matches. This is
+   * how the defining "job to be done" answer dominates generic profile answers:
+   * the purpose-built tool for a job gets a decisive boost, not just a badge.
+   */
+  strongFitBonus: number;
   confidence: ConfidenceThresholds;
 }
 

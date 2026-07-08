@@ -15,6 +15,7 @@ function base(): Content {
     ],
     rules: {
       confidence: { highMargin: 0.3, mediumMargin: 0.12, minFit: 0.4 },
+      strongFitBonus: 10,
       disqualifiers: [],
       requiredPrereqs: [],
       strongFits: [],

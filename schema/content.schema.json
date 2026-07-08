@@ -75,9 +75,11 @@
         "disqualifiers",
         "requiredPrereqs",
         "strongFits",
+        "strongFitBonus",
         "confidence"
       ],
       "properties": {
+        "strongFitBonus": { "type": "number", "minimum": 0 },
         "weights": {
           "type": "array",
           "items": {

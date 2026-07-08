@@ -105,6 +105,13 @@ describe('content/content.yaml — golden scenarios', () => {
     expect(r.top?.approachId).toBe('copilot_studio');
   });
 
+  it('GOLDEN: a research job recommends Scout even against near-substitute SKUs', () => {
+    // The strong-fit boost must let the purpose-built tool win over Cowork/
+    // Agent Builder, which tie on the generic profile answers.
+    const r = score({ ...packagedTask, job: 'research' }, content);
+    expect(r.top?.approachId).toBe('scout_skills');
+  });
+
   it('GOLDEN: fully unanswered -> no clear fit, confidence none', () => {
     const r = score({}, content);
     expect(r.noClearFit).toBe(true);
