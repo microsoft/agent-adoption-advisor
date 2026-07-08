@@ -1,0 +1,33 @@
+{
+  "name": "agent-adoption-advisor",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run content:build && npm run content:validate && tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "content:build": "tsx scripts/build-content.ts",
+    "content:validate": "tsx scripts/validate-content.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4",
+    "yaml": "^2.6.0"
+  }
+}

@@ -1,0 +1,162 @@
+# Agent Adoption Advisor — content + rules (source of truth).
+#
+# Authored in YAML for SME ergonomics; compiled to public/content.json at build
+# and validated against schema/content.schema.json in CI. Do NOT hand-edit the
+# compiled JSON.
+#
+# Rule of thumb for SMEs:
+#   - ALWAYS quote string values (avoids YAML coercing NO/ON/version-like text).
+#   - weights nudge; disqualifiers hard-block; requiredPrereqs gate; strongFits flag.
+#   - The tool must be willing to recommend AWAY from a heavy custom build when a
+#     packaged skill covers the scenario. That honesty is the whole product.
+
+version: "2026.07"
+lastReviewed: "2026-07-08"
+
+questions:
+  - id: "scenario"
+    prompt: "What best describes the primary scenario?"
+    options:
+      - id: "packaged_task"
+        label: "A common, well-scoped task a packaged skill likely covers"
+      - id: "custom_workflow"
+        label: "A bespoke, org-specific workflow"
+      - id: "broad_platform"
+        label: "A broad platform other teams will build on"
+
+  - id: "data_residency"
+    prompt: "Are there hard data residency or sovereignty requirements?"
+    options:
+      - id: "none"
+        label: "No hard residency constraints"
+      - id: "regional"
+        label: "Data must stay in a specific region"
+
+  - id: "build_appetite"
+    prompt: "What is the team's appetite to build and maintain custom code?"
+    options:
+      - id: "low"
+        label: "Prefer to configure, not build"
+      - id: "high"
+        label: "Have engineers ready to build and own code"
+
+  - id: "control"
+    prompt: "How much low-level control over the agent runtime is required?"
+    options:
+      - id: "managed"
+        label: "Managed is fine"
+      - id: "procode"
+        label: "Need full pro-code control over the runtime"
+
+approaches:
+  - id: "agent_builder"
+    name: "Agent Builder"
+    summary: "Fastest path for well-scoped tasks inside Microsoft 365."
+    pros:
+      - "Lowest time-to-value; no code."
+      - "Native to the Microsoft 365 surface users already have."
+    cons:
+      - "Limited for bespoke, deeply custom workflows."
+    whenNotToUse: "When the scenario needs pro-code control or a broad platform."
+
+  - id: "cowork_skills"
+    name: "Cowork with skills"
+    summary: "Packaged skills for common tasks with minimal build."
+    pros:
+      - "Covers common tasks out of the box."
+      - "Very low maintenance burden."
+    cons:
+      - "Not a fit when the workflow is genuinely org-specific."
+    whenNotToUse: "When no packaged skill covers the scenario."
+
+  - id: "scout_skills"
+    name: "Scout with skills"
+    summary: "Skill-augmented approach for research and retrieval tasks."
+    pros:
+      - "Strong for retrieval-heavy, research-style tasks."
+      - "Low build overhead."
+    cons:
+      - "Narrower than a full custom platform."
+    whenNotToUse: "When you need a general-purpose custom agent."
+
+  - id: "copilot_studio"
+    name: "Copilot Studio"
+    summary: "Low-code authoring for bespoke org-specific workflows."
+    pros:
+      - "Handles bespoke workflows without full pro-code."
+      - "Governed, extensible authoring surface."
+    cons:
+      - "More setup than a packaged skill."
+    whenNotToUse: "When a packaged skill already covers the task."
+
+  - id: "foundry"
+    name: "Foundry"
+    summary: "Pro-code platform for broad, engineer-owned agent builds."
+    pros:
+      - "Full pro-code control over the runtime."
+      - "Best for broad platforms other teams build on."
+    cons:
+      - "Highest build and maintenance cost."
+    whenNotToUse: "When a lighter, packaged option covers the scenario."
+
+rules:
+  confidence:
+    highMargin: 0.30
+    mediumMargin: 0.12
+    minFit: 0.40
+
+  # Hard blocks. A regional residency requirement rules out approaches that
+  # cannot guarantee it. This is what stops five soft answers from crowning an
+  # indefensible winner.
+  disqualifiers:
+    - question: "data_residency"
+      option: "regional"
+      approach: "cowork_skills"
+      reason: "Cowork skills cannot guarantee regional data residency."
+    - question: "data_residency"
+      option: "regional"
+      approach: "scout_skills"
+      reason: "Scout skills cannot guarantee regional data residency."
+
+  # A broad platform for other teams to build on requires pro-code (Foundry).
+  requiredPrereqs:
+    - approach: "foundry"
+      question: "control"
+      option: "procode"
+      reason: "Foundry is a pro-code platform; without pro-code control it is over-built."
+
+  strongFits:
+    - question: "scenario"
+      option: "packaged_task"
+      approach: "cowork_skills"
+      reason: "A packaged skill directly covers this task."
+    - question: "scenario"
+      option: "broad_platform"
+      approach: "foundry"
+      reason: "Broad platform builds are Foundry's core use case."
+
+  weights:
+    # scenario
+    - { question: "scenario", option: "packaged_task", approach: "cowork_skills", points: 5 }
+    - { question: "scenario", option: "packaged_task", approach: "scout_skills", points: 3 }
+    - { question: "scenario", option: "packaged_task", approach: "agent_builder", points: 3 }
+    - { question: "scenario", option: "packaged_task", approach: "copilot_studio", points: 1 }
+    - { question: "scenario", option: "packaged_task", approach: "foundry", points: 0 }
+    - { question: "scenario", option: "custom_workflow", approach: "copilot_studio", points: 5 }
+    - { question: "scenario", option: "custom_workflow", approach: "foundry", points: 3 }
+    - { question: "scenario", option: "custom_workflow", approach: "agent_builder", points: 1 }
+    - { question: "scenario", option: "broad_platform", approach: "foundry", points: 5 }
+    - { question: "scenario", option: "broad_platform", approach: "copilot_studio", points: 2 }
+    # build_appetite
+    - { question: "build_appetite", option: "low", approach: "cowork_skills", points: 3 }
+    - { question: "build_appetite", option: "low", approach: "scout_skills", points: 2 }
+    - { question: "build_appetite", option: "low", approach: "agent_builder", points: 3 }
+    - { question: "build_appetite", option: "low", approach: "copilot_studio", points: 2 }
+    - { question: "build_appetite", option: "low", approach: "foundry", points: 0 }
+    - { question: "build_appetite", option: "high", approach: "foundry", points: 3 }
+    - { question: "build_appetite", option: "high", approach: "copilot_studio", points: 2 }
+    # control
+    - { question: "control", option: "managed", approach: "cowork_skills", points: 2 }
+    - { question: "control", option: "managed", approach: "agent_builder", points: 2 }
+    - { question: "control", option: "managed", approach: "copilot_studio", points: 2 }
+    - { question: "control", option: "procode", approach: "foundry", points: 4 }
