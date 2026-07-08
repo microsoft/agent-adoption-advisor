@@ -128,7 +128,7 @@ approaches:
     whenNotToUse: "When the scenario needs pro-code control or a broad platform."
 
   - id: "cowork_skills"
-    name: "Cowork with skills"
+    name: "Cowork"
     summary: "Packaged skills for common collaborative tasks with minimal build."
     pros:
       - "Covers common tasks out of the box."
@@ -138,7 +138,7 @@ approaches:
     whenNotToUse: "When no packaged skill covers the scenario."
 
   - id: "scout_skills"
-    name: "Scout with skills"
+    name: "Scout"
     summary: "Skill-augmented approach for research and retrieval tasks."
     pros:
       - "Strong for retrieval-heavy, research-style tasks."
