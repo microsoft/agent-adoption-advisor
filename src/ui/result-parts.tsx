@@ -1,6 +1,6 @@
 import type { Approach, Content } from '../engine/model.js';
 import type { ApproachScore, ScoreResult } from '../engine/score.js';
-import { confidenceCopy, nextStep } from './present.js';
+import { confidenceCopy, confidencePips, nextStep } from './present.js';
 
 type ApproachIndex = Map<string, Approach>;
 
@@ -37,8 +37,14 @@ export function ScenarioSummary({ content, answers }: { content: Content; answer
 /** Confidence pill, reused on screen and in the one-pager. */
 export function ConfidenceBadge({ result }: { result: ScoreResult }) {
   const c = confidenceCopy(result.confidence);
+  const { filled, total } = confidencePips(result.confidence);
   return (
     <span className={`badge badge--${c.tone}`} title={c.blurb}>
+      <span className="badge__pips" aria-hidden="true">
+        {Array.from({ length: total }, (_, i) => (
+          <span key={i} className={`badge__pip badge__pip--${i < filled ? 'on' : 'off'}`} />
+        ))}
+      </span>
       {c.label}
     </span>
   );

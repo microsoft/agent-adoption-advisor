@@ -39,6 +39,16 @@ export function confidenceCopy(c: Confidence): ConfidenceCopy {
 }
 
 /**
+ * Confidence as a neutral filled-pip scale (engineered, not stoplight-colored).
+ * high = 3/3, medium = 2/3, low = 1/3, none = 0/3. Pure so the badge renders
+ * byte-identical on screen and in the print one-pager.
+ */
+export function confidencePips(c: Confidence): { filled: number; total: number } {
+  const FILLED: Record<Confidence, number> = { high: 3, medium: 2, low: 1, none: 0 };
+  return { filled: FILLED[c], total: 3 };
+}
+
+/**
  * Deterministic "suggested next step". Generic on purpose — it references the
  * recommended approach by name but makes no product-specific promises the SMEs
  * haven't signed off. Mirrors the confidence banding: the weaker the fit, the
