@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "predev": "npm run content:build",
     "dev": "vite",
     "build": "npm run content:build && npm run content:validate && tsc --noEmit && vite build",
     "preview": "vite preview",
@@ -19,12 +20,15 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20.19.43",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.3",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "jsdom": "^24.1.3",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "vite": "^5.4.10",
