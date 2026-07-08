@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "content:build": "tsx scripts/build-content.ts",
     "content:validate": "tsx scripts/validate-content.ts",
+    "explain": "tsx scripts/explain.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
