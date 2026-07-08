@@ -4,35 +4,61 @@ import { render, cleanup, screen, within } from '@testing-library/react';
 import type { AnswerMap } from '../engine/model.js';
 import { score } from '../engine/score.js';
 import { loadContent } from '../test/fixture.js';
-import { Results } from './Results.js';
+import { LivePanel } from './LivePanel.js';
+import { Breakdown } from './Breakdown.js';
 import { RecommendationCard, indexApproaches } from './result-parts.js';
 
 const content = loadContent();
 
 afterEach(cleanup);
 
-describe('Results (jsdom)', () => {
-  it('renders the top recommendation, alternatives, pros/cons, and next step', () => {
+function renderLivePanel(answers: AnswerMap, detailOpen = false) {
+  const result = score(answers, content);
+  render(
+    <LivePanel
+      content={content}
+      answers={answers}
+      result={result}
+      onCreateOnePager={() => {}}
+      onToggleDetail={() => {}}
+      detailOpen={detailOpen}
+    />,
+  );
+  return result;
+}
+
+describe('LivePanel (jsdom)', () => {
+  it('names the top approach, shows per-approach fit bars, and the share action', () => {
     const answers: AnswerMap = { job: 'research', grounding: 'm365' };
-    const result = score(answers, content);
+    const result = renderLivePanel(answers);
     expect(result.top).not.toBeNull();
 
-    render(
-      <Results content={content} answers={answers} result={result} onCreateOnePager={() => {}} />,
-    );
+    const panel = screen.getByLabelText('Live recommendation');
+    // The panel names the engine's top approach as the lead heading (renderer, not routing).
+    expect(within(panel).getByRole('heading', { name: result.top!.name })).toBeTruthy();
+    // A live fit bar list is present.
+    expect(within(panel).getByLabelText('Fit by approach')).toBeTruthy();
+    // Both the breakdown toggle and the one-pager action are present.
+    expect(screen.getByRole('button', { name: /full breakdown/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /one-pager/i })).toBeTruthy();
+  });
 
-    // Recommendation names the engine's top approach (renderer, not routing).
-    const rec = screen.getByLabelText('Recommendation');
-    expect(within(rec).getByText(result.top!.name)).toBeTruthy();
+  it('shows an inviting empty state before any answer', () => {
+    renderLivePanel({});
+    expect(screen.getByText(/start answering/i)).toBeTruthy();
+  });
+});
 
-    // The seven sections are present.
+describe('Breakdown (jsdom)', () => {
+  it('renders scenario, pros/cons, and why-not sections', () => {
+    const answers: AnswerMap = { job: 'research', grounding: 'm365' };
+    const result = score(answers, content);
+
+    render(<Breakdown content={content} answers={answers} result={result} />);
+
     expect(screen.getByLabelText('Your scenario')).toBeTruthy();
     expect(screen.getByLabelText('Pros and cons')).toBeTruthy();
     expect(screen.getByLabelText('Why this recommendation')).toBeTruthy();
-    expect(screen.getByLabelText('Next step')).toBeTruthy();
-
-    // The share action is present.
-    expect(screen.getByRole('button', { name: /shareable one-pager/i })).toBeTruthy();
   });
 
   it('surfaces a disqualified approach with its reason in "why not"', () => {
@@ -40,9 +66,7 @@ describe('Results (jsdom)', () => {
     const result = score(answers, content);
     expect(result.disqualified.length).toBeGreaterThan(0);
 
-    render(
-      <Results content={content} answers={answers} result={result} onCreateOnePager={() => {}} />,
-    );
+    render(<Breakdown content={content} answers={answers} result={result} />);
 
     const why = screen.getByLabelText('Why this recommendation');
     expect(within(why).getAllByText(/Ruled out/i).length).toBeGreaterThan(0);
@@ -51,7 +75,7 @@ describe('Results (jsdom)', () => {
 
 describe('RecommendationCard no-clear-fit (jsdom)', () => {
   it('shows "No clear fit" when nothing scores above the floor', () => {
-    const result = score({}, content); // no answers → fit 0 → no clear fit
+    const result = score({}, content); // no answers -> fit 0 -> no clear fit
     expect(result.noClearFit).toBe(true);
 
     render(<RecommendationCard result={result} approaches={indexApproaches(content)} />);
