@@ -7,6 +7,9 @@ import { Questionnaire } from './ui/Questionnaire.js';
 import { LivePanel } from './ui/LivePanel.js';
 import { Breakdown } from './ui/Breakdown.js';
 import { ExportView } from './ui/ExportView.js';
+import { CardCanvas } from './ui/CardCanvas.js';
+
+type Mode = 'cards' | 'classic';
 
 /** Read the view + state off the URL once at module load (no router lib). */
 function readUrl(): { view: string | null; state: string | null } {
@@ -19,6 +22,7 @@ export function App() {
   const loaded = useContent();
   const [answers, setAnswers] = useState<AnswerMap>({});
   const [detailOpen, setDetailOpen] = useState(false);
+  const [mode, setMode] = useState<Mode>('cards');
   const { view, state } = readUrl();
 
   if (loaded.status === 'loading') {
@@ -45,6 +49,13 @@ export function App() {
   const onChange = (questionId: string, optionId: string) =>
     setAnswers((prev) => ({ ...prev, [questionId]: optionId }));
 
+  const onClear = (questionId: string) =>
+    setAnswers((prev) => {
+      const next = { ...prev };
+      delete next[questionId];
+      return next;
+    });
+
   const onReset = () => {
     setAnswers({});
     setDetailOpen(false);
@@ -56,8 +67,50 @@ export function App() {
     window.location.assign(url);
   };
 
+  const modeToggle = (
+    <div className="modeswitch no-print" role="group" aria-label="View mode">
+      <button
+        type="button"
+        className={`modeswitch__btn${mode === 'cards' ? ' modeswitch__btn--on' : ''}`}
+        aria-pressed={mode === 'cards'}
+        onClick={() => setMode('cards')}
+      >
+        Card board
+      </button>
+      <button
+        type="button"
+        className={`modeswitch__btn${mode === 'classic' ? ' modeswitch__btn--on' : ''}`}
+        aria-pressed={mode === 'classic'}
+        onClick={() => setMode('classic')}
+      >
+        Questionnaire
+      </button>
+    </div>
+  );
+
+  if (mode === 'cards') {
+    return (
+      <div className="app app--cards">
+        {modeToggle}
+        <CardCanvas
+          content={content}
+          answers={answers}
+          result={result}
+          onPlace={onChange}
+          onClear={onClear}
+          onReset={onReset}
+          onCreateOnePager={onCreateOnePager}
+        />
+        {anyAnswered && detailOpen && (
+          <Breakdown content={content} answers={answers} result={result} />
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="app app--split">
+      {modeToggle}
       <header className="app__header">
         <h1 className="app__title">Agent Adoption Advisor</h1>
         <p className="app__lede">
